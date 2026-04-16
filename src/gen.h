@@ -4,8 +4,10 @@
 #include <cstdint>
 #include <algorithm>
 
+
 constexpr int LOOP = 100'0000; // 100万
 constexpr int REPEAT = 10;
+
 
 #define GEN(NAME, BODY) \
 namespace asmImpl { \
@@ -34,63 +36,77 @@ uint64_t NAME() { \
 }
 
 
+#define REP1(x) x
+#define REP2(x) REP1(x) REP1(x)
+#define REP3(x) REP2(x) REP1(x)
+#define REP4(x) REP2(x) REP2(x)
+#define REP5(x) REP4(x) REP1(x)
+#define REP6(x) REP4(x) REP2(x)
+#define REP7(x) REP6(x) REP1(x)
+#define REP8(x) REP4(x) REP4(x)
+// #define REP9(x) REP8(x) REP1(x)
+// #define REP10(x) REP8(x) REP2(x)
+
+#define ADD_RAX "add rax,1\n"
+#define ADD_RBX "add rbx,1\n"
+#define ADD_RCX "add rcx,1\n"
+#define ADD_RDX "add rdx,1\n"
+#define ADD_R8  "add r8,1\n"
+#define ADD_R9  "add r9,1\n"
+#define ADD_R10 "add r10,1\n"
+#define ADD_R11 "add r11,1\n"
+#define ADD_R12 "add r12,1\n"
+#define ADD_R13 "add r13,1\n"
+
+#define ADD_IND_1 ADD_RAX
+#define ADD_IND_2 ADD_RAX ADD_RBX
+#define ADD_IND_3 ADD_RAX ADD_RBX ADD_RCX
+#define ADD_IND_4 ADD_RAX ADD_RBX ADD_RCX ADD_RDX
+#define ADD_IND_5 ADD_IND_4 ADD_R8
+#define ADD_IND_6 ADD_IND_5 ADD_R9
+#define ADD_IND_7 ADD_IND_6 ADD_R10
+#define ADD_IND_8 ADD_IND_7 ADD_R11
+// #define ADD_IND_9 ADD_IND_8 ADD_R12
+// #define ADD_IND_10 ADD_IND_9 ADD_R13
+
+
+
+
+
+
+
 
 
 
 // ===== add =====
-GEN(add_dep_1,
-	"add rax,1\n"
-)
-GEN(add_dep_2,
-	"add rax,1\n"
-	"add rax,1\n"
-)
-GEN(add_dep_4,
-	"add rax,1\n"
-	"add rax,1\n"
-	"add rax,1\n"
-	"add rax,1\n"
-)
+GEN(add_dep_1, REP1("add rax,1\n"))
+GEN(add_dep_2, REP2("add rax,1\n"))
+GEN(add_dep_3, REP3("add rax,1\n"))
+GEN(add_dep_4, REP4("add rax,1\n"))
+GEN(add_dep_5, REP5("add rax,1\n"))
+GEN(add_dep_6, REP6("add rax,1\n"))
+GEN(add_dep_7, REP7("add rax,1\n"))
+GEN(add_dep_8, REP8("add rax,1\n"))
 
-GEN(add_ind_1,
-	"add rax,1\n"
-)
-GEN(add_ind_2,
-	"add rax,1\n"
-	"add rbx,1\n"
-)
-GEN(add_ind_4,
-	"add rax,1\n"
-	"add rbx,1\n"
-	"add rcx,1\n"
-	"add rdx,1\n"
-)
-GEN(add_ind_8,
-	"add rax,1\n"
-	"add rbx,1\n"
-	"add rcx,1\n"
-	"add rdx,1\n"
-	"add r8,1\n"
-	"add r9,1\n"
-	"add r10,1\n"
-	"add r11,1\n"
-)
+GEN(add_ind_1, ADD_IND_1)
+GEN(add_ind_2, ADD_IND_2)
+GEN(add_ind_3, ADD_IND_3)
+GEN(add_ind_4, ADD_IND_4)
+GEN(add_ind_5, ADD_IND_5)
+GEN(add_ind_6, ADD_IND_6)
+GEN(add_ind_7, ADD_IND_7)
+GEN(add_ind_8, ADD_IND_8)
 
 
 // ===== mul =====
-GEN(mul_dep_1,
-	"imul rax,rax\n"
-)
-GEN(mul_dep_2,
-	"imul rax,rax\n"
-	"imul rax,rax\n"
-)
-GEN(mul_dep_4,
-	"imul rax,rax\n"
-	"imul rax,rax\n"
-	"imul rax,rax\n"
-	"imul rax,rax\n"
-)
+GEN(mul_dep_1, REP1("imul rax,rax\n"))
+GEN(mul_dep_2, REP2("imul rax,rax\n"))
+GEN(mul_dep_3, REP3("imul rax,rax\n"))
+GEN(mul_dep_4, REP4("imul rax,rax\n"))
+GEN(mul_dep_5, REP5("imul rax,rax\n"))
+GEN(mul_dep_6, REP6("imul rax,rax\n"))
+GEN(mul_dep_7, REP7("imul rax,rax\n"))
+GEN(mul_dep_8, REP8("imul rax,rax\n"))
 
 GEN(mul_ind_1,
 	"imul rax,rbx\n"
@@ -190,7 +206,7 @@ GEN(sqrt_ind_8,
 	"sqrtss xmm2,xmm3\n"
 	"sqrtss xmm4,xmm5\n"
 	"sqrtss xmm6,xmm7\n"
-	"sqrtss xmm7,xmm8\n"
+	"sqrtss xmm8,xmm9\n"
 )
 
 
