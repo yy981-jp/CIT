@@ -1,84 +1,74 @@
-#include <x86intrin.h>
-#include <iostream>
-#include <cstdint>
-#include <algorithm>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
-constexpr int LOOP = 100'0000; // 100万
-constexpr int REPEAT = 10;
+#include "gen.h"
 
-#define GEN(NAME, INSTCOUNT, BODY) \
-namespace asmImpl { \
-double NAME##_##INSTCOUNT() { \
-	uint64_t best = UINT64_MAX; \
-	for (int r=0; r < REPEAT; r++) { \
-		unsigned aux; \
-		asm volatile("lfence" ::: "memory"); \
-		uint64_t start = __rdtsc(); \
-		for (int i=0; i < LOOP; i++) { \
-			asm volatile( \
-				".intel_syntax noprefix\n" \
-				BODY \
-				".att_syntax\n" \
-				: \
-				: \
-				: "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15" \
-			); \
-		} \
-		asm volatile("lfence" ::: "memory"); \
-		uint64_t end = __rdtscp(&aux); \
-		best = std::min(best, end - start); \
-	} \
-	return ((double)best / (double)LOOP) / (double)INSTCOUNT; \
-} \
+using json = nlohmann::json;
+
+
+json readJson(const std::string& path) {
+	std::ifstream ifs(path);
+	if (!ifs) throw std::runtime_error("readJson()::ファイルを開けませんでした");
+	json j;
+	ifs >> j;
+	return j;
+}
+
+void writeJson(const json& j, const std::string& path) {
+	std::ofstream ofs(path);
+	if (!ofs) throw std::runtime_error("writeJson()::ファイルを開けませんでした");
+	ofs << j;
 }
 
 
 
-// 依存あり
-GEN(add_dep, 1, "add rax,1\n")
-GEN(add_dep, 2, "add rax,1\nadd rax,1\n")
-GEN(add_dep, 4, "add rax,1\nadd rax,1\nadd rax,1\nadd rax,1\n")
-
-// 依存なし
-GEN(add_ind, 1, "add rax,1\n")
-GEN(add_ind, 2, "add rax,1\nadd rbx,1\n")
-GEN(add_ind, 4, "add rax,1\nadd rbx,1\nadd rcx,1\nadd rdx,1\n")
-GEN(add_ind, 8, "add rax,1\nadd rbx,1\nadd rcx,1\nadd rdx,1\nadd r8,1\nadd r9,1\nadd r10,1\nadd r11,1\n")
-
-GEN(mul_dep, 1, "imul rax,rax\n")
-GEN(mul_dep, 2, "imul rax,rax\nimul rax,rax\n")
-GEN(mul_dep, 4, "imul rax,rax\nimul rax,rax\nimul rax,rax\nimul rax,rax\n")
-
-GEN(mul_ind, 1, "imul rax,rbx\n")
-GEN(mul_ind, 2, "imul rax,rbx\nimul rcx,rdx\n")
-GEN(mul_ind, 4, "imul rax,rbx\nimul rcx,rdx\nimul r8,r9\nimul r10,r11\n")
-GEN(mul_ind, 8, "imul rax,rbx\nimul rcx,rdx\nimul r8,r9\nimul r10,r11\nimul r12,r13\nimul r14,r15\nimul rbx,rcx\nimul rdx,r8\n")
-
-GEN(div_dep, 1,
-	"mov rdx,0\n"
-	"mov rax,100\n"
-	"mov rbx,3\n"
-	"idiv rbx\n"
-)
-
-GEN(sqrt_dep, 1, "sqrtss xmm0,xmm0\n")
-GEN(sqrt_dep, 2, "sqrtss xmm0,xmm0\nsqrtss xmm0,xmm0\n")
-GEN(sqrt_dep, 4, "sqrtss xmm0,xmm0\nsqrtss xmm0,xmm0\nsqrtss xmm0,xmm0\nsqrtss xmm0,xmm0\n")
-
-GEN(sqrt_ind, 1, "sqrtss xmm0,xmm1\n")
-GEN(sqrt_ind, 2, "sqrtss xmm0,xmm1\nsqrtss xmm2,xmm3\n")
-GEN(sqrt_ind, 4, "sqrtss xmm0,xmm1\nsqrtss xmm2,xmm3\nsqrtss xmm4,xmm5\nsqrtss xmm6,xmm7\n")
-
-
 int main() {
-	std::cout << "add_dep_1 " << asmImpl::add_dep_1() << "\n";
-	std::cout << "add_ind_8 " << asmImpl::add_ind_8() << "\n";
+	json j;
 
-	std::cout << "mul_dep_1 " << asmImpl::mul_dep_1() << "\n";
-	std::cout << "mul_ind_8 " << asmImpl::mul_ind_8() << "\n";
+	// add
+	j["add"]["dep"]["1"] = asmImpl::add_dep_1();
+	j["add"]["dep"]["2"] = asmImpl::add_dep_2();
+	j["add"]["dep"]["4"] = asmImpl::add_dep_4();
+	j["add"]["ind"]["1"] = asmImpl::add_ind_1();
+	j["add"]["ind"]["2"] = asmImpl::add_ind_2();
+	j["add"]["ind"]["4"] = asmImpl::add_ind_4();
+	j["add"]["ind"]["8"] = asmImpl::add_ind_8();
 
-	std::cout << "div_dep_1 " << asmImpl::div_dep_1() << "\n";
+	// mul
+	j["mul"]["dep"]["1"] = asmImpl::mul_dep_1();
+	j["mul"]["dep"]["2"] = asmImpl::mul_dep_2();
+	j["mul"]["dep"]["4"] = asmImpl::mul_dep_4();
+	j["mul"]["ind"]["1"] = asmImpl::mul_ind_1();
+	j["mul"]["ind"]["2"] = asmImpl::mul_ind_2();
+	j["mul"]["ind"]["4"] = asmImpl::mul_ind_4();
+	j["mul"]["ind"]["8"] = asmImpl::mul_ind_8();
 
-	std::cout << "sqrt_dep_1 " << asmImpl::sqrt_dep_1() << "\n";
-	std::cout << "sqrt_ind_4 " << asmImpl::sqrt_ind_4() << "\n";
+	// div
+	j["div"]["dep"]["1"] = asmImpl::div_dep_1();
+	j["div"]["dep"]["2"] = asmImpl::div_dep_2();
+	j["div"]["dep"]["4"] = asmImpl::div_dep_4();
+	j["div"]["ind"]["1"] = asmImpl::div_ind_1();
+	j["div"]["ind"]["2"] = asmImpl::div_ind_2();
+	j["div"]["ind"]["4"] = asmImpl::div_ind_4();
+	j["div"]["ind"]["8"] = asmImpl::div_ind_8();
+
+	// mul
+	j["sqrt"]["dep"]["1"] = asmImpl::sqrt_dep_1();
+	j["sqrt"]["dep"]["2"] = asmImpl::sqrt_dep_2();
+	j["sqrt"]["dep"]["4"] = asmImpl::sqrt_dep_4();
+	j["sqrt"]["ind"]["1"] = asmImpl::sqrt_ind_1();
+	j["sqrt"]["ind"]["2"] = asmImpl::sqrt_ind_2();
+	j["sqrt"]["ind"]["4"] = asmImpl::sqrt_ind_4();
+	j["sqrt"]["ind"]["8"] = asmImpl::sqrt_ind_8();
+
+	// fma
+	j["fma"]["dep"]["1"] = asmImpl::fma_dep_1();
+	j["fma"]["dep"]["2"] = asmImpl::fma_dep_2();
+	j["fma"]["dep"]["4"] = asmImpl::fma_dep_4();
+	j["fma"]["ind"]["1"] = asmImpl::fma_ind_1();
+	j["fma"]["ind"]["2"] = asmImpl::fma_ind_2();
+	j["fma"]["ind"]["4"] = asmImpl::fma_ind_4();
+	j["fma"]["ind"]["8"] = asmImpl::fma_ind_8();
+
+	std::cout << j.dump(4);
 }
