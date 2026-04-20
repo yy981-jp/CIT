@@ -1,12 +1,10 @@
 #pragma once
+#include "def.h"
 #include <x86intrin.h>
 #include <iostream>
 #include <cstdint>
 #include <algorithm>
 
-
-constexpr int LOOP = 100'0000; // 100万
-constexpr int REPEAT = 10;
 
 struct Result {
 	std::string instr, depends;
@@ -21,26 +19,41 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 	res.instr = #INSTR; \
 	res.depends = #DEP; \
 	res.instrNum = INSTRNUM; \
-	uint64_t best = UINT64_MAX; \
-	for (int r = 0; r < REPEAT; r++) { \
+	std::vector<uint64_t> results; \
+	results.resize(LOOP_OUT); \
+ \
+	alignas(64) static uintptr_t chase[1024]; \
+	static bool init = false; \
+	if (!init) { \
+		for(size_t i=0;i<1023;i++) \
+			chase[i]=(uintptr_t)&chase[i+1]; \
+ \
+		chase[1023]=(uintptr_t)&chase[0]; \
+ \
+		init=true; \
+	} \
+ \
+	for (int r = 0; r < LOOP_OUT; r++) { \
 		unsigned aux; \
 		asm volatile("lfence" ::: "memory"); \
 		uint64_t start = __rdtsc(); \
-		for (int i=0; i < LOOP; i++) { \
+		for (int i=0; i < LOOP_IN; i++) { \
 			asm volatile( \
 				".intel_syntax noprefix\n" \
 				BODY \
 				".att_syntax\n" \
 				: \
-				: \
+				: "S"(chase) \
 				: "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15" \
 			); \
 		} \
 		asm volatile("lfence" ::: "memory"); \
 		uint64_t end = __rdtscp(&aux); \
-		best = std::min(best, end - start); \
+		results[r] = end - start; \
 	} \
-	res.result = best; \
+	size_t idx = results.size() * 0.05; \
+	std::nth_element(results.begin(), results.begin()+idx, results.end()); \
+	res.result = results[idx]; \
 	return res; \
 } \
 }
@@ -119,6 +132,15 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 #define FMA_IND_6 FMA_IND_5 "vfmadd132ps xmm15, xmm0, xmm1\n"
 #define FMA_IND_7 FMA_IND_6 "vfmadd132ps xmm2, xmm3, xmm4\n"
 #define FMA_IND_8 FMA_IND_7 "vfmadd132ps xmm5, xmm6, xmm7\n"
+
+#define LOAD_IND_1 "mov rax,[rsi]\n"
+#define LOAD_IND_2 LOAD_IND_1 "mov rbx,[rsi+8]\n"
+#define LOAD_IND_3 LOAD_IND_2 "mov rcx,[rsi+16]\n"
+#define LOAD_IND_4 LOAD_IND_3 "mov rdx,[rsi+24]\n"
+#define LOAD_IND_5 LOAD_IND_4 "mov r8,[rsi+32]\n"
+#define LOAD_IND_6 LOAD_IND_5 "mov r9,[rsi+40]\n"
+#define LOAD_IND_7 LOAD_IND_6 "mov r10,[rsi+48]\n"
+#define LOAD_IND_8 LOAD_IND_7 "mov r11,[rsi+56]\n"
 
 
 
@@ -212,3 +234,23 @@ GEN(fma, ind, 5, FMA_IND_5)
 GEN(fma, ind, 6, FMA_IND_6)
 GEN(fma, ind, 7, FMA_IND_7)
 GEN(fma, ind, 8, FMA_IND_8)
+
+
+// ===== load =====
+GEN(load, dep, 1, REP1("mov rsi,[rsi]\n"))
+GEN(load, dep, 2, REP2("mov rsi,[rsi]\n"))
+GEN(load, dep, 3, REP3("mov rsi,[rsi]\n"))
+GEN(load, dep, 4, REP4("mov rsi,[rsi]\n"))
+GEN(load, dep, 5, REP5("mov rsi,[rsi]\n"))
+GEN(load, dep, 6, REP6("mov rsi,[rsi]\n"))
+GEN(load, dep, 7, REP7("mov rsi,[rsi]\n"))
+GEN(load, dep, 8, REP8("mov rsi,[rsi]\n"))
+
+GEN(load, ind, 1, LOAD_IND_1)
+GEN(load, ind, 2, LOAD_IND_2)
+GEN(load, ind, 3, LOAD_IND_3)
+GEN(load, ind, 4, LOAD_IND_4)
+GEN(load, ind, 5, LOAD_IND_5)
+GEN(load, ind, 6, LOAD_IND_6)
+GEN(load, ind, 7, LOAD_IND_7)
+GEN(load, ind, 8, LOAD_IND_8)
