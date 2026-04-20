@@ -88,13 +88,22 @@ int main() {
 	run(j, asmImpl::sqrt_ind_8);
 
 	// fma
-	// run(j, asmImpl::fma_dep_1);
-	// run(j, asmImpl::fma_dep_2);
-	// run(j, asmImpl::fma_dep_4);
-	// run(j, asmImpl::fma_ind_1);
-	// run(j, asmImpl::fma_ind_2);
-	// run(j, asmImpl::fma_ind_4);
-	// run(j, asmImpl::fma_ind_8);
+	run(j, asmImpl::fma_dep_1);
+	run(j, asmImpl::fma_dep_2);
+	run(j, asmImpl::fma_dep_3);
+	run(j, asmImpl::fma_dep_4);
+	run(j, asmImpl::fma_dep_5);
+	run(j, asmImpl::fma_dep_6);
+	run(j, asmImpl::fma_dep_7);
+	run(j, asmImpl::fma_dep_8);
+	run(j, asmImpl::fma_ind_1);
+	run(j, asmImpl::fma_ind_2);
+	run(j, asmImpl::fma_ind_3);
+	run(j, asmImpl::fma_ind_4);
+	run(j, asmImpl::fma_ind_5);
+	run(j, asmImpl::fma_ind_6);
+	run(j, asmImpl::fma_ind_7);
+	run(j, asmImpl::fma_ind_8);
 
 	// std::cout << j.dump(4);
 

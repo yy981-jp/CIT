@@ -102,14 +102,24 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 #define SQRT_4 "sqrtss xmm4,xmm5\n"
 #define SQRT_7 "sqrtss xmm7,xmm9\n"
 
-#define SQRT_IND1 SQRT_0 
-#define SQRT_IND2 SQRT_IND1 SQRT_2 
-#define SQRT_IND3 SQRT_IND2 SQRT_4 
-#define SQRT_IND4 SQRT_IND3 SQRT_6 
-#define SQRT_IND5 SQRT_IND4 SQRT_8 
-#define SQRT_IND6 SQRT_IND5 SQRT_1 
-#define SQRT_IND7 SQRT_IND6 SQRT_4 
-#define SQRT_IND8 SQRT_IND7 SQRT_7 
+#define SQRT_IND_1 SQRT_0 
+#define SQRT_IND_2 SQRT_IND_1 SQRT_2 
+#define SQRT_IND_3 SQRT_IND_2 SQRT_4 
+#define SQRT_IND_4 SQRT_IND_3 SQRT_6 
+#define SQRT_IND_5 SQRT_IND_4 SQRT_8 
+#define SQRT_IND_6 SQRT_IND_5 SQRT_1 
+#define SQRT_IND_7 SQRT_IND_6 SQRT_4 
+#define SQRT_IND_8 SQRT_IND_7 SQRT_7 
+
+#define FMA_IND_1 "vfmadd132ps xmm0, xmm1, xmm2\n"
+#define FMA_IND_2 FMA_IND_1 "vfmadd132ps xmm3, xmm4, xmm5\n"
+#define FMA_IND_3 FMA_IND_2 "vfmadd132ps xmm6, xmm7, xmm8\n"
+#define FMA_IND_4 FMA_IND_3 "vfmadd132ps xmm9, xmm10, xmm11\n"
+#define FMA_IND_5 FMA_IND_4 "vfmadd132ps xmm12, xmm13, xmm14\n"
+#define FMA_IND_6 FMA_IND_5 "vfmadd132ps xmm15, xmm0, xmm1\n"
+#define FMA_IND_7 FMA_IND_6 "vfmadd132ps xmm2, xmm3, xmm4\n"
+#define FMA_IND_8 FMA_IND_7 "vfmadd132ps xmm5, xmm6, xmm7\n"
+
 
 
 // ===== add =====
@@ -174,51 +184,31 @@ GEN(sqrt, dep, 6, REP6("sqrtss xmm0,xmm0\n"))
 GEN(sqrt, dep, 7, REP7("sqrtss xmm0,xmm0\n"))
 GEN(sqrt, dep, 8, REP8("sqrtss xmm0,xmm0\n"))
 
-GEN(sqrt, ind, 1, SQRT_IND1)
-GEN(sqrt, ind, 2, SQRT_IND2)
-GEN(sqrt, ind, 3, SQRT_IND3)
-GEN(sqrt, ind, 4, SQRT_IND4)
-GEN(sqrt, ind, 5, SQRT_IND5)
-GEN(sqrt, ind, 6, SQRT_IND6)
-GEN(sqrt, ind, 7, SQRT_IND7)
-GEN(sqrt, ind, 8, SQRT_IND8)
+GEN(sqrt, ind, 1, SQRT_IND_1)
+GEN(sqrt, ind, 2, SQRT_IND_2)
+GEN(sqrt, ind, 3, SQRT_IND_3)
+GEN(sqrt, ind, 4, SQRT_IND_4)
+GEN(sqrt, ind, 5, SQRT_IND_5)
+GEN(sqrt, ind, 6, SQRT_IND_6)
+GEN(sqrt, ind, 7, SQRT_IND_7)
+GEN(sqrt, ind, 8, SQRT_IND_8)
 
 
-// // ===== fma =====
-// GEN(fma_dep_1,
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// )
-// GEN(fma_dep_2,
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// )
-// GEN(fma_dep_4,
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// )
+// ===== fma =====
+GEN(fma, dep, 1, REP1("vfmadd132ps xmm0, xmm1, xmm2\n"))
+GEN(fma, dep, 2, REP2("vfmadd132ps xmm0, xmm1, xmm2\n"))
+GEN(fma, dep, 3, REP3("vfmadd132ps xmm0, xmm1, xmm2\n"))
+GEN(fma, dep, 4, REP4("vfmadd132ps xmm0, xmm1, xmm2\n"))
+GEN(fma, dep, 5, REP5("vfmadd132ps xmm0, xmm1, xmm2\n"))
+GEN(fma, dep, 6, REP6("vfmadd132ps xmm0, xmm1, xmm2\n"))
+GEN(fma, dep, 7, REP7("vfmadd132ps xmm0, xmm1, xmm2\n"))
+GEN(fma, dep, 8, REP8("vfmadd132ps xmm0, xmm1, xmm2\n"))
 
-// GEN(fma_ind_1,
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// )
-// GEN(fma_ind_2,
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// 	"vfmadd132ps xmm3, xmm4, xmm5\n"
-// )
-// GEN(fma_ind_4,
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// 	"vfmadd132ps xmm3, xmm4, xmm5\n"
-// 	"vfmadd132ps xmm6, xmm7, xmm8\n"
-// 	"vfmadd132ps xmm9, xmm10, xmm11\n"
-// )
-// GEN(fma_ind_8,
-// 	"vfmadd132ps xmm0, xmm1, xmm2\n"
-// 	"vfmadd132ps xmm3, xmm4, xmm5\n"
-// 	"vfmadd132ps xmm6, xmm7, xmm8\n"
-// 	"vfmadd132ps xmm9, xmm10, xmm11\n"
-// 	"vfmadd132ps xmm12, xmm13, xmm14\n"
-// 	"vfmadd132ps xmm15, xmm0, xmm1\n"
-// 	"vfmadd132ps xmm2, xmm3, xmm4\n"
-// 	"vfmadd132ps xmm5, xmm6, xmm7\n"
-// )
+GEN(fma, ind, 1, FMA_IND_1)
+GEN(fma, ind, 2, FMA_IND_2)
+GEN(fma, ind, 3, FMA_IND_3)
+GEN(fma, ind, 4, FMA_IND_4)
+GEN(fma, ind, 5, FMA_IND_5)
+GEN(fma, ind, 6, FMA_IND_6)
+GEN(fma, ind, 7, FMA_IND_7)
+GEN(fma, ind, 8, FMA_IND_8)
