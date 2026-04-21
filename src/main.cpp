@@ -13,6 +13,8 @@ void writeJson(const json& j, const std::string& path) {
 	std::ofstream ofs(path);
 	if (!ofs) throw std::runtime_error("writeJson()::ファイルを開けませんでした");
 	ofs << j;
+	ofs.flush();
+	ofs.close();
 }
 
 void save(json& j, Result res) {
@@ -47,6 +49,7 @@ int main() {
 
 	// div
 	RUN(j, div_dep);
+	RUN(j, div_ind);
 
 	// sqrt
 	RUN(j, sqrt_dep);

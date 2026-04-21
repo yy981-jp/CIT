@@ -148,6 +148,15 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 #define MUL_IND_7 MUL_IND_6 MUL_RBX
 #define MUL_IND_8 MUL_IND_7 MUL_Rdx
 
+#define DIV_IND_1 "divsd xmm0, xmm8\n" 
+#define DIV_IND_2 DIV_IND_1 "divsd xmm1, xmm9\n"
+#define DIV_IND_3 DIV_IND_2 "divsd xmm2, xmm10\n"
+#define DIV_IND_4 DIV_IND_3 "divsd xmm3, xmm11\n"
+#define DIV_IND_5 DIV_IND_4 "divsd xmm4, xmm12\n"
+#define DIV_IND_6 DIV_IND_5 "divsd xmm5, xmm13\n"
+#define DIV_IND_7 DIV_IND_6 "divsd xmm6, xmm14\n"
+#define DIV_IND_8 DIV_IND_7 "divsd xmm7, xmm15\n"
+
 #define SQRT_IND_1 "sqrtss xmm0,xmm1\n" 
 #define SQRT_IND_2 SQRT_IND_1 "sqrtss xmm2,xmm3\n"
 #define SQRT_IND_3 SQRT_IND_2 "sqrtss xmm4,xmm5\n"
@@ -227,6 +236,15 @@ GEN(div, dep, 5, REP5("divsd xmm0, xmm1\n"))
 GEN(div, dep, 6, REP6("divsd xmm0, xmm1\n"))
 GEN(div, dep, 7, REP7("divsd xmm0, xmm1\n"))
 GEN(div, dep, 8, REP8("divsd xmm0, xmm1\n"))
+
+GEN(div, ind, 1, DIV_IND_1)
+GEN(div, ind, 2, DIV_IND_2)
+GEN(div, ind, 3, DIV_IND_3)
+GEN(div, ind, 4, DIV_IND_4)
+GEN(div, ind, 5, DIV_IND_5)
+GEN(div, ind, 6, DIV_IND_6)
+GEN(div, ind, 7, DIV_IND_7)
+GEN(div, ind, 8, DIV_IND_8)
 
 
 // ===== sqrt =====
