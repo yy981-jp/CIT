@@ -7,123 +7,61 @@
 using json = nlohmann::json;
 
 
+
+
 void writeJson(const json& j, const std::string& path) {
 	std::ofstream ofs(path);
 	if (!ofs) throw std::runtime_error("writeJson()::ファイルを開けませんでした");
 	ofs << j;
 }
 
-void run(json& j, std::function<Result()> f) {
-	Result res = f();
+void save(json& j, Result res) {
 	j[res.instr][res.depends][std::to_string(res.instrNum)] = res.result;
 }
+
+#define RUN(J, TARGET) \
+	save(J, asmImpl::TARGET##_1()); \
+	save(J, asmImpl::TARGET##_2()); \
+	save(J, asmImpl::TARGET##_3()); \
+	save(J, asmImpl::TARGET##_4()); \
+	save(J, asmImpl::TARGET##_5()); \
+	save(J, asmImpl::TARGET##_6()); \
+	save(J, asmImpl::TARGET##_7()); \
+	save(J, asmImpl::TARGET##_8());
 
 
 
 int main() {
 	json j;
 
+	// warm-up
+	RUN(j, add_dep)
+
 	// add
-	run(j, asmImpl::add_dep_1);
-	run(j, asmImpl::add_dep_2);
-	run(j, asmImpl::add_dep_3);
-	run(j, asmImpl::add_dep_4);
-	run(j, asmImpl::add_dep_5);
-	run(j, asmImpl::add_dep_6);
-	run(j, asmImpl::add_dep_7);
-	run(j, asmImpl::add_dep_8);
-	run(j, asmImpl::add_ind_1);
-	run(j, asmImpl::add_ind_2);
-	run(j, asmImpl::add_ind_3);
-	run(j, asmImpl::add_ind_4);
-	run(j, asmImpl::add_ind_5);
-	run(j, asmImpl::add_ind_6);
-	run(j, asmImpl::add_ind_7);
-	run(j, asmImpl::add_ind_8);
+	RUN(j, add_dep);
+	RUN(j, add_ind);
 
 	// mul
-	run(j, asmImpl::mul_dep_1);
-	run(j, asmImpl::mul_dep_2);
-	run(j, asmImpl::mul_dep_3);
-	run(j, asmImpl::mul_dep_4);
-	run(j, asmImpl::mul_dep_5);
-	run(j, asmImpl::mul_dep_6);
-	run(j, asmImpl::mul_dep_7);
-	run(j, asmImpl::mul_dep_8);
-	run(j, asmImpl::mul_ind_1);
-	run(j, asmImpl::mul_ind_2);
-	run(j, asmImpl::mul_ind_3);
-	run(j, asmImpl::mul_ind_4);
-	run(j, asmImpl::mul_ind_5);
-	run(j, asmImpl::mul_ind_6);
-	run(j, asmImpl::mul_ind_7);
-	run(j, asmImpl::mul_ind_8);
+	RUN(j, mul_dep);
+	RUN(j, mul_ind);
 
 	// div
-	run(j, asmImpl::div_dep_1);
-	run(j, asmImpl::div_dep_2);
-	run(j, asmImpl::div_dep_3);
-	run(j, asmImpl::div_dep_4);
-	run(j, asmImpl::div_dep_5);
-	run(j, asmImpl::div_dep_6);
-	run(j, asmImpl::div_dep_7);
-	run(j, asmImpl::div_dep_8);
+	RUN(j, div_dep);
 
 	// sqrt
-	run(j, asmImpl::sqrt_dep_1);
-	run(j, asmImpl::sqrt_dep_2);
-	run(j, asmImpl::sqrt_dep_3);
-	run(j, asmImpl::sqrt_dep_4);
-	run(j, asmImpl::sqrt_dep_5);
-	run(j, asmImpl::sqrt_dep_6);
-	run(j, asmImpl::sqrt_dep_7);
-	run(j, asmImpl::sqrt_dep_8);
-	run(j, asmImpl::sqrt_ind_1);
-	run(j, asmImpl::sqrt_ind_2);
-	run(j, asmImpl::sqrt_ind_3);
-	run(j, asmImpl::sqrt_ind_4);
-	run(j, asmImpl::sqrt_ind_5);
-	run(j, asmImpl::sqrt_ind_6);
-	run(j, asmImpl::sqrt_ind_7);
-	run(j, asmImpl::sqrt_ind_8);
+	RUN(j, sqrt_dep);
+	RUN(j, sqrt_ind);
 
 	// fma
-	run(j, asmImpl::fma_dep_1);
-	run(j, asmImpl::fma_dep_2);
-	run(j, asmImpl::fma_dep_3);
-	run(j, asmImpl::fma_dep_4);
-	run(j, asmImpl::fma_dep_5);
-	run(j, asmImpl::fma_dep_6);
-	run(j, asmImpl::fma_dep_7);
-	run(j, asmImpl::fma_dep_8);
-	run(j, asmImpl::fma_ind_1);
-	run(j, asmImpl::fma_ind_2);
-	run(j, asmImpl::fma_ind_3);
-	run(j, asmImpl::fma_ind_4);
-	run(j, asmImpl::fma_ind_5);
-	run(j, asmImpl::fma_ind_6);
-	run(j, asmImpl::fma_ind_7);
-	run(j, asmImpl::fma_ind_8);
+	RUN(j, fma_dep);
+	RUN(j, fma_ind);
 
-	// fma
-	run(j, asmImpl::load_dep_1);
-	run(j, asmImpl::load_dep_2);
-	run(j, asmImpl::load_dep_3);
-	run(j, asmImpl::load_dep_4);
-	run(j, asmImpl::load_dep_5);
-	run(j, asmImpl::load_dep_6);
-	run(j, asmImpl::load_dep_7);
-	run(j, asmImpl::load_dep_8);
-	run(j, asmImpl::load_ind_1);
-	run(j, asmImpl::load_ind_2);
-	run(j, asmImpl::load_ind_3);
-	run(j, asmImpl::load_ind_4);
-	run(j, asmImpl::load_ind_5);
-	run(j, asmImpl::load_ind_6);
-	run(j, asmImpl::load_ind_7);
-	run(j, asmImpl::load_ind_8);
+	// load
+	RUN(j, load_dep);
+	RUN(j, load_ind);
 
 	// std::cout << j.dump(4);
 
 	writeJson(j, "data.json");
+	std::cout << "done.\n";
 }

@@ -9,7 +9,10 @@
 struct Result {
 	std::string instr, depends;
 	int instrNum;
-	uint64_t result;
+	double result;
+	void operator-=(uint64_t b) {
+		this->result -= b;
+	}
 };
 
 #define GEN(INSTR, DEP, INSTRNUM, BODY) \
@@ -37,23 +40,25 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 		unsigned aux; \
 		asm volatile("lfence" ::: "memory"); \
 		uint64_t start = __rdtsc(); \
-		for (int i=0; i < LOOP_IN; i++) { \
+		for (int i = 0; i < LOOP_IN; i++) { \
 			asm volatile( \
 				".intel_syntax noprefix\n" \
 				BODY \
 				".att_syntax\n" \
 				: \
 				: "S"(chase) \
-				: "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15" \
+				: "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15", \
+				  "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7", "xmm8", \
+				  "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15" \
 			); \
 		} \
 		asm volatile("lfence" ::: "memory"); \
 		uint64_t end = __rdtscp(&aux); \
 		results[r] = end - start; \
 	} \
-	size_t idx = results.size() * 0.05; \
+	size_t idx = results.size() * 0.01; \
 	std::nth_element(results.begin(), results.begin()+idx, results.end()); \
-	res.result = results[idx]; \
+	res.result = results[idx] / (double)LOOP_IN; \
 	return res; \
 } \
 }
@@ -106,32 +111,23 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 #define MUL_IND_7 MUL_IND_6 MUL_RBX
 #define MUL_IND_8 MUL_IND_7 MUL_Rdx
 
-#define SQRT_0 "sqrtss xmm0,xmm1\n"
-#define SQRT_2 "sqrtss xmm2,xmm3\n"
-#define SQRT_4 "sqrtss xmm4,xmm5\n"
-#define SQRT_6 "sqrtss xmm6,xmm7\n"
-#define SQRT_8 "sqrtss xmm8,xmm9\n"
-#define SQRT_1 "sqrtss xmm1,xmm3\n"
-#define SQRT_4 "sqrtss xmm4,xmm5\n"
-#define SQRT_7 "sqrtss xmm7,xmm9\n"
-
-#define SQRT_IND_1 SQRT_0 
-#define SQRT_IND_2 SQRT_IND_1 SQRT_2 
-#define SQRT_IND_3 SQRT_IND_2 SQRT_4 
-#define SQRT_IND_4 SQRT_IND_3 SQRT_6 
-#define SQRT_IND_5 SQRT_IND_4 SQRT_8 
-#define SQRT_IND_6 SQRT_IND_5 SQRT_1 
-#define SQRT_IND_7 SQRT_IND_6 SQRT_4 
-#define SQRT_IND_8 SQRT_IND_7 SQRT_7 
+#define SQRT_IND_1 "sqrtss xmm0,xmm1\n" 
+#define SQRT_IND_2 SQRT_IND_1 "sqrtss xmm2,xmm3\n"
+#define SQRT_IND_3 SQRT_IND_2 "sqrtss xmm4,xmm5\n"
+#define SQRT_IND_4 SQRT_IND_3 "sqrtss xmm6,xmm7\n"
+#define SQRT_IND_5 SQRT_IND_4 "sqrtss xmm8,xmm9\n"
+#define SQRT_IND_6 SQRT_IND_5 "sqrtss xmm10,xmm11\n"
+#define SQRT_IND_7 SQRT_IND_6 "sqrtss xmm12,xmm13\n"
+#define SQRT_IND_8 SQRT_IND_7 "sqrtss xmm14,xmm15\n"
 
 #define FMA_IND_1 "vfmadd132ps xmm0, xmm1, xmm2\n"
 #define FMA_IND_2 FMA_IND_1 "vfmadd132ps xmm3, xmm4, xmm5\n"
 #define FMA_IND_3 FMA_IND_2 "vfmadd132ps xmm6, xmm7, xmm8\n"
 #define FMA_IND_4 FMA_IND_3 "vfmadd132ps xmm9, xmm10, xmm11\n"
 #define FMA_IND_5 FMA_IND_4 "vfmadd132ps xmm12, xmm13, xmm14\n"
-#define FMA_IND_6 FMA_IND_5 "vfmadd132ps xmm15, xmm0, xmm1\n"
-#define FMA_IND_7 FMA_IND_6 "vfmadd132ps xmm2, xmm3, xmm4\n"
-#define FMA_IND_8 FMA_IND_7 "vfmadd132ps xmm5, xmm6, xmm7\n"
+#define FMA_IND_6 FMA_IND_5 "vfmadd132ps xmm15, xmm2, xmm3\n"
+// #define FMA_IND_7 FMA_IND_6 "vfmadd132ps xmm2, xmm3, xmm4\n"
+// #define FMA_IND_8 FMA_IND_7 "vfmadd132ps xmm5, xmm6, xmm7\n"
 
 #define LOAD_IND_1 "mov rax,[rsi]\n"
 #define LOAD_IND_2 LOAD_IND_1 "mov rbx,[rsi+8]\n"
@@ -232,8 +228,8 @@ GEN(fma, ind, 3, FMA_IND_3)
 GEN(fma, ind, 4, FMA_IND_4)
 GEN(fma, ind, 5, FMA_IND_5)
 GEN(fma, ind, 6, FMA_IND_6)
-GEN(fma, ind, 7, FMA_IND_7)
-GEN(fma, ind, 8, FMA_IND_8)
+GEN(fma, ind, 7, "") // 物理的にxmm系レジスタが足りないんだよ? しょうがないじゃん
+GEN(fma, ind, 8, "")
 
 
 // ===== load =====
