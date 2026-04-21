@@ -35,7 +35,7 @@ int main() {
 	json j;
 
 	// warm-up
-	RUN(j, add_dep)
+	REP8(RUN(j, add_dep))
 
 	// add
 	RUN(j, add_dep);

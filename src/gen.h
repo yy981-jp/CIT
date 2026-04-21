@@ -25,6 +25,43 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 	std::vector<uint64_t> results; \
 	results.resize(LOOP_OUT); \
  \
+	for (int r = 0; r < LOOP_OUT; r++) { \
+		unsigned aux; \
+		asm volatile("lfence" ::: "memory"); \
+		uint64_t start = __rdtsc(); \
+		for (int i = 0; i < LOOP_IN; i++) { \
+			asm volatile( \
+				".intel_syntax noprefix\n" \
+				BODY \
+				".att_syntax\n" \
+				: \
+				: \
+				: "rax","rbx","rcx","rdx","r8","r9","r10","r11","r12","r13","r14","r15", \
+				  "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7", "xmm8", \
+				  "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15" \
+			); \
+		} \
+		asm volatile("lfence" ::: "memory"); \
+		uint64_t end = __rdtscp(&aux); \
+		results[r] = end - start; \
+	} \
+	size_t idx = results.size() * 0.05; \
+	std::nth_element(results.begin(), results.begin()+idx, results.end()); \
+	res.result = results[idx] / (double)LOOP_IN; \
+	return res; \
+} \
+}
+
+#define GEN_LOAD(INSTR, DEP, INSTRNUM, BODY) \
+namespace asmImpl { \
+Result INSTR##_##DEP##_##INSTRNUM() { \
+	Result res; \
+	res.instr = #INSTR; \
+	res.depends = #DEP; \
+	res.instrNum = INSTRNUM; \
+	std::vector<uint64_t> results; \
+	results.resize(LOOP_OUT); \
+ \
 	alignas(64) static uintptr_t chase[1024]; \
 	static bool init = false; \
 	if (!init) { \
@@ -56,7 +93,7 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 		uint64_t end = __rdtscp(&aux); \
 		results[r] = end - start; \
 	} \
-	size_t idx = results.size() * 0.01; \
+	size_t idx = results.size() * 0.05; \
 	std::nth_element(results.begin(), results.begin()+idx, results.end()); \
 	res.result = results[idx] / (double)LOOP_IN; \
 	return res; \
@@ -233,20 +270,20 @@ GEN(fma, ind, 8, "")
 
 
 // ===== load =====
-GEN(load, dep, 1, REP1("mov rsi,[rsi]\n"))
-GEN(load, dep, 2, REP2("mov rsi,[rsi]\n"))
-GEN(load, dep, 3, REP3("mov rsi,[rsi]\n"))
-GEN(load, dep, 4, REP4("mov rsi,[rsi]\n"))
-GEN(load, dep, 5, REP5("mov rsi,[rsi]\n"))
-GEN(load, dep, 6, REP6("mov rsi,[rsi]\n"))
-GEN(load, dep, 7, REP7("mov rsi,[rsi]\n"))
-GEN(load, dep, 8, REP8("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 1, REP1("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 2, REP2("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 3, REP3("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 4, REP4("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 5, REP5("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 6, REP6("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 7, REP7("mov rsi,[rsi]\n"))
+GEN_LOAD(load, dep, 8, REP8("mov rsi,[rsi]\n"))
 
-GEN(load, ind, 1, LOAD_IND_1)
-GEN(load, ind, 2, LOAD_IND_2)
-GEN(load, ind, 3, LOAD_IND_3)
-GEN(load, ind, 4, LOAD_IND_4)
-GEN(load, ind, 5, LOAD_IND_5)
-GEN(load, ind, 6, LOAD_IND_6)
-GEN(load, ind, 7, LOAD_IND_7)
-GEN(load, ind, 8, LOAD_IND_8)
+GEN_LOAD(load, ind, 1, LOAD_IND_1)
+GEN_LOAD(load, ind, 2, LOAD_IND_2)
+GEN_LOAD(load, ind, 3, LOAD_IND_3)
+GEN_LOAD(load, ind, 4, LOAD_IND_4)
+GEN_LOAD(load, ind, 5, LOAD_IND_5)
+GEN_LOAD(load, ind, 6, LOAD_IND_6)
+GEN_LOAD(load, ind, 7, LOAD_IND_7)
+GEN_LOAD(load, ind, 8, LOAD_IND_8)
