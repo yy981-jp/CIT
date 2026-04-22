@@ -100,6 +100,14 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 } \
 }
 
+#define GEN_VOID(INSTR, DEP, INSTRNUM) \
+namespace asmImpl { \
+Result INSTR##_##DEP##_##INSTRNUM() { \
+	Result res; \
+	res.result = UINT64_MAX; \
+	return res; \
+} \
+}
 
 #define REP1(x) x
 #define REP2(x) REP1(x) REP1(x)
@@ -283,8 +291,9 @@ GEN(fma, ind, 3, FMA_IND_3)
 GEN(fma, ind, 4, FMA_IND_4)
 GEN(fma, ind, 5, FMA_IND_5)
 GEN(fma, ind, 6, FMA_IND_6)
-GEN(fma, ind, 7, "") // 物理的にxmm系レジスタが足りないんだよ? しょうがないじゃん
-GEN(fma, ind, 8, "")
+
+GEN_VOID(fma, ind, 7) // 物理的にxmm系レジスタが足りないんだよ? しょうがないじゃん
+GEN_VOID(fma, ind, 8)
 
 
 // ===== load =====

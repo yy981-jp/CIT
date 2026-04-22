@@ -18,6 +18,7 @@ void writeJson(const json& j, const std::string& path) {
 }
 
 void save(json& j, Result res) {
+	if (res.result == UINT64_MAX) return;
 	j[res.instr][res.depends][std::to_string(res.instrNum)] = res.result;
 }
 
