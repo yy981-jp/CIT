@@ -61,8 +61,8 @@ int main() {
 	RUN(j, fma_ind);
 
 	// load
-	RUN(j, load_dep);
-	RUN(j, load_ind);
+	// RUN(j, load_dep);
+	// RUN(j, load_ind);
 
 	// std::cout << j.dump(4);
 
