@@ -22,8 +22,7 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 	res.instr = #INSTR; \
 	res.depends = #DEP; \
 	res.instrNum = INSTRNUM; \
-	std::vector<uint64_t> results; \
-	results.resize(LOOP_OUT); \
+	uint64_t best; \
  \
 	for (int r = 0; r < LOOP_OUT; r++) { \
 		unsigned aux; \
@@ -43,11 +42,9 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 		} \
 		asm volatile("lfence" ::: "memory"); \
 		uint64_t end = __rdtscp(&aux); \
-		results[r] = end - start; \
+		best = std::min(best, end - start); \
 	} \
-	size_t idx = results.size() * 0.05; \
-	std::nth_element(results.begin(), results.begin()+idx, results.end()); \
-	res.result = results[idx] / (double)LOOP_IN; \
+	res.result = best / (double)LOOP_IN; \
 	return res; \
 } \
 }
@@ -59,8 +56,7 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 	res.instr = #INSTR; \
 	res.depends = #DEP; \
 	res.instrNum = INSTRNUM; \
-	std::vector<uint64_t> results; \
-	results.resize(LOOP_OUT); \
+	uint64_t best; \
  \
 	alignas(64) static uintptr_t chase[1024]; \
 	static bool init = false; \
@@ -91,11 +87,9 @@ Result INSTR##_##DEP##_##INSTRNUM() { \
 		} \
 		asm volatile("lfence" ::: "memory"); \
 		uint64_t end = __rdtscp(&aux); \
-		results[r] = end - start; \
+		best = std::min(best, end - start); \
 	} \
-	size_t idx = results.size() * 0.05; \
-	std::nth_element(results.begin(), results.begin()+idx, results.end()); \
-	res.result = results[idx] / (double)LOOP_IN; \
+	res.result = best / (double)LOOP_IN; \
 	return res; \
 } \
 }
