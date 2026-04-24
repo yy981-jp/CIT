@@ -1,10 +1,4 @@
 @echo off
 
-pushd build
-call ct.exe
-popd
-
-pushd tools
 call graph.py ../build/data.json
 call table.py ../build/data.json
-popd

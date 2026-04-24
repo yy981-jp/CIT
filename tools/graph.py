@@ -1,8 +1,16 @@
 import json
 import matplotlib.pyplot as plt
+import sys
+
+
+if len(sys.argv) > 1:
+	jsonFPath = sys.argv[1]
+else:
+	jsonFPath = "../build/data.json"
+
 
 # JSON読み込み
-with open('../build/data.json', 'r', encoding='utf-8') as f:
+with open(jsonFPath, 'r', encoding='utf-8') as f:
     j = json.load(f)
     data = j["data"]
 
