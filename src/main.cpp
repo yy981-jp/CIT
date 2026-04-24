@@ -66,7 +66,9 @@ int main() {
 	json& data = j["data"];
 
 	// warm-up
-	REP8(RUN(data, add_dep))
+	for (int i = 0; i < 16; i++) {
+		RUN(data, add_dep)
+	}
 
 	// add
 	RUN(data, add_dep);
