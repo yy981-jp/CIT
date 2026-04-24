@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 
 # JSON読み込み
 with open('../build/data.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
+    j = json.load(f)
+    data = j["data"]
 
 
 plt.rcParams['font.family'] = 'Meiryo'

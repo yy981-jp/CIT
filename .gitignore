@@ -4,5 +4,5 @@ build*/
 *.exe
 *.csv
 *.png
-*.json
 graphs/
+log/
