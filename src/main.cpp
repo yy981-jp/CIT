@@ -12,7 +12,7 @@ using json = nlohmann::json;
 void writeJson(const json& j, const std::string& path) {
 	std::ofstream ofs(path);
 	if (!ofs) throw std::runtime_error("writeJson()::ファイルを開けませんでした");
-	ofs << j;
+	ofs << std::setprecision(17) << j;
 }
 
 json readJson(const std::string& path) {

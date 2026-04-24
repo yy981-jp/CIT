@@ -5,4 +5,4 @@ build*/
 *.csv
 *.png
 graphs/
-log/
+# log/
